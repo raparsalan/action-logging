@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-2i$=b_hhc4rfmsf38z63ez-kj81u*95he^t(jm=*tn$6pcyv#x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.railway.app']
 
 
 # Application definition
