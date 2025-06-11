@@ -1,1 +1,1 @@
-web: gunicorn actionLogging.wsgi
+web: gunicorn loggingSystem.wsgi
