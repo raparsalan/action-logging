@@ -9,35 +9,6 @@ import pytz
 def get_indonesia_time():
     return datetime.now(pytz.timezone('Asia/Jakarta'))
 
-# class LogViewSet(viewsets.ModelViewSet):
-#     queryset = ActionLog.objects.all().order_by('timestamp')
-#     serializer_class = ActionLogSerializer
-
-#     def create(self, request, *args, **kwargs):
-#         data = request.data.copy()
-
-#         jakarta = pytz.timezone('Asia/Jakarta')
-#         now_wib = datetime.now(jakarta)
-#         data['timestamp'] = now_wib.strftime('%Y-%m-%d %H:%M:%S')
-
-#         serializer = self.get_serializer(data=data)
-#         serializer.is_valid(raise_exception=True)
-#         self.perform_create(serializer)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # def list(self, request, *args, **kwargs):
-    #     queryset = self.get_queryset()
-    #     serializer = self.get_serializer(queryset, many=True)
-
-    #     
-    #     jakarta = pytz.timezone('Asia/Jakarta')
-    #     for item in serializer.data:
-    #         if item['timestamp']:
-    #             dt = datetime.strptime(item['timestamp'], '%Y-%m-%dT%H:%M:%S.%fZ')
-    #             item['timestamp'] = dt.astimezone(jakarta).strftime('%Y-%m-%d %H:%M:%S')
-
-    #     return Response(serializer.data)
-
 class LogUserActionView(APIView):
     def post(self, request):
         data = request.data
@@ -51,4 +22,27 @@ class LogUserActionView(APIView):
         user_log = ActionLog.objects.create(id_user=id_user,log_created=log_created, list_action=new_actions)
 
         serializer = UserActionLogSerializer(user_log)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({
+            "message": "Log created successfully",
+            "id": str(user_log.idLog),  # ini bagian penting untuk PHP
+            "data": serializer.data
+        }, status=status.HTTP_200_OK)
+    
+    def put(self, request):
+        data = request.data
+        id = data.get("id")
+        new_actions = data.get("list_action", [])
+
+        if not id or not new_actions:
+            return Response({"error": "id and list_action are required"}, status=400)
+
+        try:
+            log = ActionLog.objects.get(idLog=id)
+        except ActionLog.DoesNotExist:
+            return Response({"error": "Log not found"}, status=404)
+
+        log.list_action = new_actions
+        log.save()
+
+        serializer = UserActionLogSerializer(log)
+        return Response(serializer.data, status=200)
