@@ -24,7 +24,7 @@ class LogUserActionView(APIView):
         serializer = UserActionLogSerializer(user_log)
         return Response({
             "message": "Log created successfully",
-            "id": str(user_log),  # ini bagian penting untuk PHP
+            "id": user_log.idLog,  
             "data": serializer.data
         }, status=status.HTTP_200_OK)
     
