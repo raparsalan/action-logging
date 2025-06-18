@@ -16,8 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from actionLogging.views import LogUserActionView
+from loggingAnalytics.views import AnalyticsView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/actionlog/', LogUserActionView.as_view(), name='log-user-action'),
+    path('api/loganalytics/', AnalyticsView.as_view(), name='log-analytics'),
 ]
