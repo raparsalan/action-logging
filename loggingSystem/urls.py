@@ -22,5 +22,6 @@ from loggingAnalytics.views import AnalyticsView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/actionlog/', LogUserActionView.as_view(), name='log-user-action'),
-    path('api/loganalytics/', AnalyticsView.as_view(), name='log-analytics'),
+    path('api/loganalytics/<int:id>/', AnalyticsView.as_view(), name='log-analytics-spesific'),  
+    path('api/loganalytics/', AnalyticsView.as_view(), name='log-analytics-general'),
 ]

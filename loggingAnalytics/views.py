@@ -9,12 +9,30 @@ from datetime import datetime, timedelta
 from .utils import get_mongo_collection, get_user_category, OLD_USER_IDS, NEW_USER_IDS,PAGE_ACTIONS 
 
 class AnalyticsView(APIView):
-    def get(self, request):
+    def get(self, request,id=None):
         collection, client = get_mongo_collection()
+        start_date = None
+        end_date = None
+
+        if id == 1:
+            # siklus 1
+            start_date = datetime(2025, 6, 9, 0, 0, 0) # 9 Juni 2025
+            end_date = datetime(2025, 6, 13, 23, 59, 59) # 13 Juni 2025
+        elif id == 2:
+            # siklus 2
+            start_date = datetime(2025, 6, 21, 0, 0, 0) # 21 Juni 2025 
+            end_date = datetime(2025, 6, 27, 23, 59, 59) # 27 Juni 2025
+        else:
+            # jika ID tidak cocok dengan siklus yang ditentukan
+            return Response({"error": "ID siklus tidak valid. ID yang tersedia adalah 1 atau 2."}, status=400)
         
         try:
-            print("--- AnalyticsView: Starting data fetch and processing ---")
-            all_logs_data = list(collection.find({})) 
+            query_filter = {}
+            if start_date and end_date:
+                # Pastikan format tanggal di MongoDB Anda sesuai untuk perbandingan
+                query_filter["log_created"] = {"$gte": start_date, "$lte": end_date}
+            
+            all_logs_data = list(collection.find(query_filter)) 
             print(f"AnalyticsView: Fetched {len(all_logs_data)} raw logs from MongoDB.")
             
             unique_new_users = set() 
@@ -59,7 +77,7 @@ class AnalyticsView(APIView):
             # --- Loop melalui setiap log untuk analisis detail ---
             for log_index, log_doc in enumerate(all_logs_data):
                 id_user = log_doc.get('id_user')
-                user_category = get_user_category(id_user) 
+                user_category = get_user_category(id_user,id) 
                 
                 log_created_dt = None
                 raw_log_created = log_doc.get('log_created')
@@ -88,7 +106,7 @@ class AnalyticsView(APIView):
 
                 if not list_action: continue
 
-                # Calculate session length (number of actions)
+                # calculate session length 
                 session_length = len(list_action)
                 if user_category == 'new_user': raw_session_lengths_new.append(session_length)
                 elif user_category == 'old_user': raw_session_lengths_old.append(session_length)
@@ -98,7 +116,7 @@ class AnalyticsView(APIView):
                     if user_category == 'new_user': unique_new_users.add(id_user)
                     elif user_category == 'old_user': unique_old_users.add(id_user) 
 
-                # Calculate total session
+                # calculate total session
                 if user_category == 'new_user': new_users_total_sessions += 1
                 elif user_category == 'old_user': old_users_total_sessions += 1 
 
