@@ -285,8 +285,8 @@ class AnalyticsView(APIView):
                 "searchTrendOld": search_trend_old, 
                 "searchKeywordFrequencyNew": search_keyword_frequency_new,
                 "searchKeywordFrequencyOld": search_keyword_frequency_old,
-                "avgSuccessfulBookingTaskDurationNew": round(avg_successful_booking_task_duration_new), 
-                "avgSuccessfulBookingTaskDurationOld": round(avg_successful_booking_task_duration_old), 
+                "successfulBookingTaskDurationNew": successful_booking_task_durations_new, 
+                "successfulBookingTaskDurationOld": successful_booking_task_durations_old, 
 
             }
 
