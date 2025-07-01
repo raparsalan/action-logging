@@ -113,15 +113,18 @@ class AnalyticsView(APIView):
                 session_length = len(list_action)
                 if user_category == 'new_user': raw_session_lengths_new.append(session_length)
                 elif user_category == 'old_user': raw_session_lengths_old.append(session_length)
+                
+                # user path
                 full_path_sequence_ids = [action.get('id_action') for action in list_action if action.get('id_action')]
                 if len(full_path_sequence_ids) > 5:
-                    path_sequence = full_path_sequence_ids[:5]
+                    path_sequence = full_path_sequence_ids[2:7]
                     if path_sequence:
                         path_string = " -> ".join(path_sequence)
                         if user_category == 'new_user':
                             user_paths_new[path_string] = user_paths_new.get(path_string, 0) + 1
                         elif user_category == 'old_user':
                             user_paths_old[path_string] = user_paths_old.get(path_string, 0) + 1
+                
                 # calculate total users
                 if id_user:
                     if user_category == 'new_user': unique_new_users.add(id_user)
