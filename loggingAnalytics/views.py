@@ -77,6 +77,8 @@ class AnalyticsView(APIView):
             successful_booking_task_durations_new = []
             successful_booking_task_durations_old = []
 
+            morethen40 = []
+
             # --- Loop melalui setiap log untuk analisis detail ---
             for log_index, log_doc in enumerate(all_logs_data):
                 id_user = log_doc.get('id_user')
@@ -218,6 +220,8 @@ class AnalyticsView(APIView):
                 
                 if first_action_time_in_session and last_action_time_in_session:
                     session_duration_seconds = (last_action_time_in_session - first_action_time_in_session).total_seconds()
+                    if session_duration_seconds > 2400:
+                        morethen40.append(log_doc.get('idLog'))
                     if user_category == 'new_user': new_session_durations.append(session_duration_seconds)
                     elif user_category == 'old_user': old_session_durations.append(session_duration_seconds) 
 
@@ -291,7 +295,7 @@ class AnalyticsView(APIView):
                 "searchKeywordFrequencyOld": search_keyword_frequency_old,
                 "successfulBookingTaskDurationNew": successful_booking_task_durations_new, 
                 "successfulBookingTaskDurationOld": successful_booking_task_durations_old, 
-
+                "moreThen40" : morethen40,
             }
 
             return Response(response_data, status=status.HTTP_200_OK)
