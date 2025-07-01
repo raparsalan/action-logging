@@ -71,6 +71,12 @@ class AnalyticsView(APIView):
             search_keyword_frequency_new = {}
             search_keyword_frequency_old = {}
 
+            user_paths_new = {} 
+            user_paths_old = {}
+            
+            successful_booking_task_durations_new = []
+            successful_booking_task_durations_old = []
+
             # --- Loop melalui setiap log untuk analisis detail ---
             for log_index, log_doc in enumerate(all_logs_data):
                 id_user = log_doc.get('id_user')
@@ -107,7 +113,14 @@ class AnalyticsView(APIView):
                 session_length = len(list_action)
                 if user_category == 'new_user': raw_session_lengths_new.append(session_length)
                 elif user_category == 'old_user': raw_session_lengths_old.append(session_length)
-
+                full_path_sequence_ids = [action.get('id_action') for action in list_action if action.get('id_action')]
+                path_sequence = full_path_sequence_ids[:5]
+                if path_sequence:
+                    path_string = " -> ".join(path_sequence)
+                    if user_category == 'new_user':
+                        user_paths_new[path_string] = user_paths_new.get(path_string, 0) + 1
+                    elif user_category == 'old_user':
+                        user_paths_old[path_string] = user_paths_old.get(path_string, 0) + 1
                 # calculate total users
                 if id_user:
                     if user_category == 'new_user': unique_new_users.add(id_user)
@@ -141,7 +154,8 @@ class AnalyticsView(APIView):
                         first_action_id_after_login_in_session = list_action[2].get('id_action')
                     elif len(list_action) == 2 and list_action[1].get('id_action') == 'home_page':
                         first_action_id_after_login_in_session = 'home_page' 
-
+                booking_task_start_time = None
+                booking_task_submit_time = None
                 # looping for list action
                 for idx, action in enumerate(list_action):
                     action_id = action.get('id_action')
@@ -152,10 +166,19 @@ class AnalyticsView(APIView):
 
                     try:
                         action_time = datetime.fromisoformat(action_time_str)
+                        # check session duration
                         if first_action_time_in_session is None or action_time < first_action_time_in_session:
                             first_action_time_in_session = action_time
                         if last_action_time_in_session is None or action_time > last_action_time_in_session:
                             last_action_time_in_session = action_time
+
+                        # check if duration for finish task
+                        if action_id == 'booking_page' and booking_task_start_time is None:
+                            booking_task_start_time = action_time
+                        if action_id == 'submit_booking' and booking_task_submit_time is None:
+                            booking_task_submit_time = action_time
+                            is_booking_successful = True
+
                     except (ValueError, TypeError) as e:
                         print(f"Error parsing action_time for log {log_doc.get('idLog')}, action '{action_id}': {action_time_str} - {e}")
                         action_time = None 
@@ -206,19 +229,31 @@ class AnalyticsView(APIView):
                         if user_category == 'new_user':
                             last_action_new[last_action_id_in_session] = last_action_new.get(last_action_id_in_session, 0) + 1
                         elif user_category == 'old_user': 
-                            last_action_old[last_action_id_in_session] = last_action_old.get(last_action_id_in_session, 0) + 1 
+                            last_action_old[last_action_id_in_session] = last_action_old.get(last_action_id_in_session, 0) + 1
+
+                if booking_task_start_time and booking_task_submit_time and booking_task_submit_time >= booking_task_start_time:
+                    duration = (booking_task_submit_time - booking_task_start_time).total_seconds()
+                    if user_category == 'new_user':
+                        successful_booking_task_durations_new.append(duration)
+                    elif user_category == 'old_user':
+                        successful_booking_task_durations_old.append(duration)
 
             avg_session_duration_new = sum(new_session_durations) / len(new_session_durations) if new_session_durations else 0
             avg_session_duration_old = sum(old_session_durations) / len(old_session_durations) if old_session_durations else 0 
             
             def get_top_n_items(counts_dict, n=5):
-                """Helper untuk mendapatkan top N item dari dictionary berdasarkan count."""
                 sorted_items = sorted(counts_dict.items(), key=lambda item: item[1], reverse=True)
                 return sorted_items[:n] # Mengembalikan list of (item, count) tuples
+           
+            top_3_user_paths_new = get_top_n_items(user_paths_new, 3)
+            top_3_user_paths_old = get_top_n_items(user_paths_old, 3)
 
             top_5_filters_new = get_top_n_items(filter_counts_new, 5)
             top_5_filters_old = get_top_n_items(filter_counts_old, 5)
 
+
+            avg_successful_booking_task_duration_new = sum(successful_booking_task_durations_new) / len(successful_booking_task_durations_new) if successful_booking_task_durations_new else 0
+            avg_successful_booking_task_duration_old = sum(successful_booking_task_durations_old) / len(successful_booking_task_durations_old) if successful_booking_task_durations_old else 0
             response_data = {
                 "totalNewUsers": len(unique_new_users),
                 "totalOldUsers": len(unique_old_users), 
@@ -232,7 +267,6 @@ class AnalyticsView(APIView):
                 "featureAccessOld": feature_access_old, 
                 "top5FiltersNew": top_5_filters_new,
                 "top5FiltersOld": top_5_filters_old,
-                "featureAccessOld": feature_access_old, 
                 "dailyActivityNew": daily_activity_new,
                 "dailyActivityOld": daily_activity_old, 
                 "hourlyActivityNew": hourly_activity_new,
@@ -245,10 +279,15 @@ class AnalyticsView(APIView):
                 "rawSessionDurationsOld": old_session_durations, 
                 "rawSessionLengthsNew": raw_session_lengths_new,
                 "rawSessionLengthsOld": raw_session_lengths_old,
+                "userPathsNew": top_3_user_paths_new, 
+                "userPathsOld": top_3_user_paths_old, 
                 "searchTrendNew": search_trend_new, 
                 "searchTrendOld": search_trend_old, 
                 "searchKeywordFrequencyNew": search_keyword_frequency_new,
                 "searchKeywordFrequencyOld": search_keyword_frequency_old,
+                "avgSuccessfulBookingTaskDurationNew": round(avg_successful_booking_task_duration_new), 
+                "avgSuccessfulBookingTaskDurationOld": round(avg_successful_booking_task_duration_old), 
+
             }
 
             return Response(response_data, status=status.HTTP_200_OK)
