@@ -16,8 +16,8 @@ class AnalyticsView(APIView):
 
         if id == 1:
             # siklus 1
-            start_date = datetime(2025, 6, 9, 0, 0, 0) # 9 Juni 2025
-            end_date = datetime(2025, 6, 13, 23, 59, 59) # 13 Juni 2025
+            start_date = datetime(2025, 6, 13, 0, 0, 0) # 9 Juni 2025
+            end_date = datetime(2025, 6, 19, 23, 59, 59) # 13 Juni 2025
         elif id == 2:
             # siklus 2
             start_date = datetime(2025, 6, 21, 0, 0, 0) # 21 Juni 2025 
