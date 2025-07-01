@@ -22,9 +22,6 @@ class AnalyticsView(APIView):
             # siklus 2
             start_date = datetime(2025, 6, 21, 0, 0, 0) # 21 Juni 2025 
             end_date = datetime(2025, 6, 27, 23, 59, 59) # 27 Juni 2025
-        else:
-            # jika ID tidak cocok dengan siklus yang ditentukan
-            return Response({"error": "ID siklus tidak valid. ID yang tersedia adalah 1 atau 2."}, status=400)
         
         try:
             query_filter = {}
