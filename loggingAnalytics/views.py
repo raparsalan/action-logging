@@ -204,9 +204,37 @@ class AnalyticsView(APIView):
                     # calculate search trend
                     if action_id and action_id.startswith('search:'):
                         keyword = action_id.split(':', 1)[1].strip()
-                        if keyword == "lapangan futsal":
+                        if keyword == "booking juni":
                             morethen40.append(log_doc.get('idLog'))
-                            action['id_action'] = 'search: parkiran'
+                            action['id_action'] = 'search: juni'
+
+                            # Simpan perubahan ke MongoDB
+                            try:
+                                updated_list_action_str = json.dumps(list_action)
+                                collection.update_one(
+                                    {"_id": log_doc["_id"]},
+                                    {"$set": {"list_action": updated_list_action_str}}
+                                )
+                                print(f"Updated log idLog={log_doc.get('idLog')} to 'search: parkiran'")
+                            except Exception as update_err:
+                                print(f"Failed to update idLog={log_doc.get('idLog')}: {update_err}")
+                        if keyword == "jadwal kosong":
+                            morethen40.append(log_doc.get('idLog'))
+                            action['id_action'] = 'search: kemakom'
+
+                            # Simpan perubahan ke MongoDB
+                            try:
+                                updated_list_action_str = json.dumps(list_action)
+                                collection.update_one(
+                                    {"_id": log_doc["_id"]},
+                                    {"$set": {"list_action": updated_list_action_str}}
+                                )
+                                print(f"Updated log idLog={log_doc.get('idLog')} to 'search: parkiran'")
+                            except Exception as update_err:
+                                print(f"Failed to update idLog={log_doc.get('idLog')}: {update_err}")
+                        if keyword == "jadwal kosong":
+                            morethen40.append(log_doc.get('idLog'))
+                            action['id_action'] = 'search: kemakom'
 
                             # Simpan perubahan ke MongoDB
                             try:
