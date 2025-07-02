@@ -163,6 +163,7 @@ class AnalyticsView(APIView):
                         first_action_id_after_login_in_session = 'home_page' 
                 booking_task_start_time = None
                 booking_task_submit_time = None
+                is_booking_successful = False
                 # looping for list action
                 for idx, action in enumerate(list_action):
                     action_id = action.get('id_action')
