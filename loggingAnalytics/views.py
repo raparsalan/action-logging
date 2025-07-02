@@ -35,6 +35,9 @@ class AnalyticsView(APIView):
             unique_new_users = set() 
             unique_old_users = set() 
             
+            new_users_booking_tries = 0
+            old_users_booking_tries = 0 
+
             new_users_successful_bookings = 0
             old_users_successful_bookings = 0 
             
@@ -150,8 +153,6 @@ class AnalyticsView(APIView):
                 first_action_time_in_session = None
                 last_action_time_in_session = None
                 
-                is_booking_successful = False
-                
                 first_action_id_after_login_in_session = None 
 
                 # get first action after login
@@ -178,6 +179,9 @@ class AnalyticsView(APIView):
 
                         # check if duration for finish task
                         if action_id == 'booking_page' and booking_task_start_time is None:
+                            if user_category == 'new_user': new_users_booking_tries += 1
+                            elif user_category == 'old_user': old_users_booking_tries += 1
+                            is_booking_successful = False
                             booking_task_start_time = action_time
                         if action_id == 'submit_booking' and booking_task_submit_time is None:
                             booking_task_submit_time = action_time
@@ -219,10 +223,11 @@ class AnalyticsView(APIView):
                         successful_booking_task_durations_new.append(duration)
                     elif user_category == 'old_user':
                         successful_booking_task_durations_old.append(duration)
-                        
+
                 if is_booking_successful:
                     if user_category == 'new_user': new_users_successful_bookings += 1
-                    elif user_category == 'old_user': old_users_successful_bookings += 1 
+                    elif user_category == 'old_user': old_users_successful_bookings += 1
+                    
                 
                 if first_action_time_in_session and last_action_time_in_session:
                     session_duration_seconds = (last_action_time_in_session - first_action_time_in_session).total_seconds()
@@ -268,7 +273,9 @@ class AnalyticsView(APIView):
                 "newUsersTotalSessions": new_users_total_sessions,
                 "oldUsersTotalSessions": old_users_total_sessions, 
                 "newUsersSuccessfulBookings": new_users_successful_bookings,
-                "oldUsersSuccessfulBookings": old_users_successful_bookings, 
+                "oldUsersSuccessfulBookings": old_users_successful_bookings,
+                "newUsersBookingTries": new_users_booking_tries,
+                "oldUsersBookingTries": old_users_booking_tries,
                 "avgSessionDurationNew": round(avg_session_duration_new), 
                 "avgSessionDurationOld": round(avg_session_duration_old), 
                 "featureAccessNew": feature_access_new,
