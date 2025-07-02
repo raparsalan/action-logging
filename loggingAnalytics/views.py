@@ -167,8 +167,6 @@ class AnalyticsView(APIView):
                     action_id = action.get('id_action')
                     action_time_str = action.get('time_action')
 
-                    if action_id == 'submit_booking':
-                        is_booking_successful = True
 
                     try:
                         action_time = datetime.fromisoformat(action_time_str)
@@ -183,7 +181,6 @@ class AnalyticsView(APIView):
                             booking_task_start_time = action_time
                         if action_id == 'submit_booking' and booking_task_submit_time is None:
                             booking_task_submit_time = action_time
-                            is_booking_successful = True
 
                     except (ValueError, TypeError) as e:
                         print(f"Error parsing action_time for log {log_doc.get('idLog')}, action '{action_id}': {action_time_str} - {e}")
@@ -214,6 +211,15 @@ class AnalyticsView(APIView):
                         elif user_category == 'old_user':
                             filter_counts_old[action_id] = filter_counts_old.get(action_id, 0) + 1
 
+                if booking_task_start_time and booking_task_submit_time and booking_task_submit_time >= booking_task_start_time:
+                    is_booking_successful = True
+
+                    duration = (booking_task_submit_time - booking_task_start_time).total_seconds()
+                    if user_category == 'new_user':
+                        successful_booking_task_durations_new.append(duration)
+                    elif user_category == 'old_user':
+                        successful_booking_task_durations_old.append(duration)
+                        
                 if is_booking_successful:
                     if user_category == 'new_user': new_users_successful_bookings += 1
                     elif user_category == 'old_user': old_users_successful_bookings += 1 
@@ -239,12 +245,6 @@ class AnalyticsView(APIView):
                         elif user_category == 'old_user': 
                             last_action_old[last_action_id_in_session] = last_action_old.get(last_action_id_in_session, 0) + 1
 
-                if booking_task_start_time and booking_task_submit_time and booking_task_submit_time >= booking_task_start_time:
-                    duration = (booking_task_submit_time - booking_task_start_time).total_seconds()
-                    if user_category == 'new_user':
-                        successful_booking_task_durations_new.append(duration)
-                    elif user_category == 'old_user':
-                        successful_booking_task_durations_old.append(duration)
 
             avg_session_duration_new = sum(new_session_durations) / len(new_session_durations) if new_session_durations else 0
             avg_session_duration_old = sum(old_session_durations) / len(old_session_durations) if old_session_durations else 0 
