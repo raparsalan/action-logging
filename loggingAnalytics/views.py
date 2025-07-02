@@ -203,7 +203,9 @@ class AnalyticsView(APIView):
                     
                     # calculate search trend
                     if action_id and action_id.startswith('search:'):
-                        keyword = action_id.split(':', 1)[1].strip() 
+                        keyword = action_id.split(':', 1)[1].strip()
+                        if keyword == "lapangan futsal":
+                            morethen40.append(log_doc.get('idLog'))
                         if keyword: 
                             if user_category == 'new_user':
                                 search_keyword_frequency_new[keyword] = search_keyword_frequency_new.get(keyword, 0) + 1
@@ -232,8 +234,7 @@ class AnalyticsView(APIView):
                 
                 if first_action_time_in_session and last_action_time_in_session:
                     session_duration_seconds = (last_action_time_in_session - first_action_time_in_session).total_seconds()
-                    if session_duration_seconds > 2400:
-                        morethen40.append(log_doc.get('idLog'))
+                    
                     if user_category == 'new_user': new_session_durations.append(session_duration_seconds)
                     elif user_category == 'old_user': old_session_durations.append(session_duration_seconds) 
 
