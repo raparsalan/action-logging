@@ -121,15 +121,17 @@ class AnalyticsView(APIView):
                 
                 # user path
                 full_path_sequence_ids = [action.get('id_action') for action in list_action if action.get('id_action')]
-                if len(full_path_sequence_ids) > 5:
-                    path_sequence = full_path_sequence_ids[2:7]
-                    if path_sequence:
+
+                if len(full_path_sequence_ids) >= 5:
+                    for i in range(len(full_path_sequence_ids) - 4):  # -4 karena window panjangnya 5
+                        path_sequence = full_path_sequence_ids[i:i+5]
                         path_string = " -> ".join(path_sequence)
+
                         if user_category == 'new_user':
                             user_paths_new[path_string] = user_paths_new.get(path_string, 0) + 1
                         elif user_category == 'old_user':
                             user_paths_old[path_string] = user_paths_old.get(path_string, 0) + 1
-                
+                                
                 # calculate total users
                 if id_user:
                     if user_category == 'new_user': unique_new_users.add(id_user)
@@ -300,8 +302,8 @@ class AnalyticsView(APIView):
                 sorted_items = sorted(counts_dict.items(), key=lambda item: item[1], reverse=True)
                 return sorted_items[:n] # Mengembalikan list of (item, count) tuples
            
-            top_3_user_paths_new = get_top_n_items(user_paths_new, 3)
-            top_3_user_paths_old = get_top_n_items(user_paths_old, 3)
+            top_3_user_paths_new = get_top_n_items(user_paths_new, 5)
+            top_5_user_paths_old = get_top_n_items(user_paths_old, 3)
 
             top_5_filters_new = get_top_n_items(filter_counts_new, 5)
             top_5_filters_old = get_top_n_items(filter_counts_old, 5)
