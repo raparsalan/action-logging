@@ -302,7 +302,7 @@ class AnalyticsView(APIView):
                 sorted_items = sorted(counts_dict.items(), key=lambda item: item[1], reverse=True)
                 return sorted_items[:n] # Mengembalikan list of (item, count) tuples
            
-            top_3_user_paths_new = get_top_n_items(user_paths_new, 5)
+            top_5_user_paths_new = get_top_n_items(user_paths_new, 5)
             top_5_user_paths_old = get_top_n_items(user_paths_old, 5)
 
             top_5_filters_new = get_top_n_items(filter_counts_new, 5)
@@ -338,8 +338,8 @@ class AnalyticsView(APIView):
                 "rawSessionDurationsOld": old_session_durations, 
                 "rawSessionLengthsNew": raw_session_lengths_new,
                 "rawSessionLengthsOld": raw_session_lengths_old,
-                "userPathsNew": top_3_user_paths_new, 
-                "userPathsOld": top_3_user_paths_old, 
+                "userPathsNew": top_5_user_paths_new, 
+                "userPathsOld": top_5_user_paths_old, 
                 "searchTrendNew": search_trend_new, 
                 "searchTrendOld": search_trend_old, 
                 "searchKeywordFrequencyNew": search_keyword_frequency_new,
