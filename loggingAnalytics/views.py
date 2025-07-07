@@ -303,7 +303,7 @@ class AnalyticsView(APIView):
                 return sorted_items[:n] # Mengembalikan list of (item, count) tuples
            
             top_3_user_paths_new = get_top_n_items(user_paths_new, 5)
-            top_5_user_paths_old = get_top_n_items(user_paths_old, 3)
+            top_5_user_paths_old = get_top_n_items(user_paths_old, 5)
 
             top_5_filters_new = get_top_n_items(filter_counts_new, 5)
             top_5_filters_old = get_top_n_items(filter_counts_old, 5)
