@@ -1,11 +1,7 @@
 from rest_framework import serializers
 from .models import ActionLog
 import pytz
-
-# class ActionLogSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = ActionLog
-#         fields = '__all__'    
+ 
 
 class ActionItemSerializer(serializers.Serializer):
     id_action = serializers.CharField()
